@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;600&display=swap" rel="stylesheet">
-    <title>Catálogo de Filmes</title>
+    <title>Catálogo de Filmes & Séries</title>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body { background:#0a0a0a; font-family:'Barlow',sans-serif; color:white; }
 
         .catalogo {
-            display:flex; flex-direction:column; align-items:center; gap:16px;
+            display:flex; flex-direction:column; align-items:center; gap:14px;
             background:linear-gradient(180deg,#000 70%,transparent);
-            padding:24px 20px 20px;
+            padding:20px 20px 16px;
             border-bottom:2px solid #e50914;
             position:sticky; top:0; z-index:100; backdrop-filter:blur(10px);
         }
@@ -21,23 +21,35 @@
             font-family:'Bebas Neue',cursive; font-size:2rem; letter-spacing:4px;
             color:#e50914; text-shadow:0 0 20px rgba(229,9,20,0.5);
         }
+        .nav-tabs-top { display:flex; gap:6px; }
+        .nav-tab-top {
+            padding:7px 22px; border:none; border-radius:20px; cursor:pointer;
+            font-family:'Barlow',sans-serif; font-size:14px; font-weight:600;
+            background:#1a1a1a; color:#666; border:1px solid #2a2a2a;
+            transition:all 0.2s; letter-spacing:0.5px;
+        }
+        .nav-tab-top.ativo { background:#e50914; color:white; border-color:#e50914; }
+        .nav-tab-top:hover:not(.ativo) { color:#ccc; border-color:#444; }
         .funcao { display:flex; gap:8px; width:100%; max-width:500px; }
         .funcao input {
-            flex:1; padding:12px 16px; border:1px solid #333; outline:none;
+            flex:1; padding:11px 16px; border:1px solid #333; outline:none;
             border-radius:6px; font-size:15px; background:#1a1a1a; color:white;
             font-family:'Barlow',sans-serif; transition:border-color 0.2s;
         }
         .funcao input:focus { border-color:#e50914; }
         .funcao input::placeholder { color:#666; }
         .funcao button {
-            padding:12px 18px; border:none; background:#e50914; color:white;
+            padding:11px 18px; border:none; background:#e50914; color:white;
             border-radius:6px; cursor:pointer; font-size:17px; transition:background 0.2s,transform 0.1s;
         }
         .funcao button:hover { background:#b8070f; transform:scale(1.04); }
 
         .container { padding:28px 20px; }
+        .secao { display:none; }
+        .secao.ativa { display:block; }
         .filmes { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:22px; }
 
+        /* CARD FILME */
         .card {
             background:#161616; border-radius:10px; overflow:hidden;
             transition:transform 0.25s,box-shadow 0.25s; cursor:pointer; position:relative;
@@ -66,7 +78,32 @@
         }
         .info button:hover { background:#b8070f; }
 
-        /* MODAL */
+        /* CARD SÉRIE */
+        .series-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:22px; }
+        .serie-card {
+            background:#161616; border-radius:10px; overflow:hidden;
+            transition:transform 0.25s,box-shadow 0.25s; cursor:pointer; position:relative;
+        }
+        .serie-card:hover { transform:translateY(-6px) scale(1.02); box-shadow:0 12px 30px rgba(229,9,20,0.3); }
+        .serie-card img { width:100%; height:300px; object-fit:cover; display:block; background:#111; }
+        .netflix-badge {
+            position:absolute; top:10px; left:10px;
+            background:#e50914; color:white; font-size:10px; font-weight:700;
+            padding:4px 10px; border-radius:4px; letter-spacing:1px;
+            display:flex; align-items:center; gap:5px;
+            box-shadow:0 2px 8px rgba(229,9,20,0.6);
+        }
+        .serie-card .info { padding:12px; }
+        .serie-card .info h3 { margin-bottom:4px; color:#fff; font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .serie-card .info p { font-size:12px; color:#888; line-height:1.4; margin-bottom:8px; }
+        .serie-card .info button {
+            width:100%; padding:9px; border:none; background:#e50914; color:white;
+            border-radius:5px; cursor:pointer; font-size:14px; font-family:'Barlow',sans-serif;
+            font-weight:600; transition:background 0.2s;
+        }
+        .serie-card .info button:hover { background:#b8070f; }
+
+        /* MODAL FILME */
         .modal {
             position:fixed; top:0; left:0; width:100%; height:100%;
             background:rgba(0,0,0,0.92); display:none; justify-content:center;
@@ -79,62 +116,40 @@
         }
         @keyframes slideUp { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
 
-        /* ABAS */
         .abas { display:flex; background:#111; border-bottom:2px solid #222; }
         .aba {
             flex:1; padding:12px; text-align:center; cursor:pointer;
             font-family:'Barlow',sans-serif; font-size:14px; font-weight:600;
             color:#555; border:none; background:transparent;
-            transition:color 0.2s, border-bottom 0.2s;
-            border-bottom:3px solid transparent; letter-spacing:0.5px;
+            transition:color 0.2s; border-bottom:3px solid transparent; letter-spacing:0.5px;
         }
         .aba:hover { color:#aaa; }
         .aba.ativa { color:white; border-bottom:3px solid #e50914; }
         .aba.loading-aba { color:#e50914; }
         .aba.indisponivel { color:#333; cursor:default; }
 
-        /* PLAYER */
-        .player-wrapper {
-            position:relative; width:100%; padding-top:56.25%; background:#000;
-        }
-        .player-wrapper iframe {
-            position:absolute; top:0; left:0; width:100%; height:100%; border:none;
-        }
+        .player-wrapper { position:relative; width:100%; padding-top:56.25%; background:#000; }
+        .player-wrapper iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:none; }
         .player-placeholder {
             position:absolute; top:0; left:0; width:100%; height:100%;
             display:flex; flex-direction:column; justify-content:center;
             align-items:center; gap:12px; color:#666; font-size:14px; text-align:center; padding:20px;
         }
-        .player-placeholder i { font-size:48px; color:#333; }
 
         .modal-info { padding:20px 24px; display:flex; flex-direction:column; gap:8px; }
         .modal-info h2 { font-family:'Bebas Neue',cursive; color:#e50914; font-size:1.8rem; letter-spacing:2px; }
         .modal-info p { font-size:14px; color:#bbb; line-height:1.6; }
         .modal-meta { display:flex; gap:16px; font-size:13px; color:#888; margin-top:4px; flex-wrap:wrap; }
-
-        /* OMDB EXTRAS */
-        .omdb-tags {
-            display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;
-        }
-        .tag {
-            padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600;
-            background:#222; color:#aaa; border:1px solid #333; letter-spacing:0.5px;
-        }
-        .omdb-row {
-            display:flex; gap:6px; font-size:13px; color:#888; align-items:flex-start; flex-wrap:wrap;
-        }
+        .omdb-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+        .tag { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; background:#222; color:#aaa; border:1px solid #333; }
+        .omdb-row { display:flex; gap:6px; font-size:13px; color:#888; align-items:flex-start; flex-wrap:wrap; }
         .omdb-row span.label { color:#555; min-width:70px; }
         .omdb-row span.value { color:#ccc; flex:1; }
         .omdb-ratings { display:flex; gap:12px; margin-top:4px; flex-wrap:wrap; }
-        .rating-badge {
-            display:flex; flex-direction:column; align-items:center; background:#1f1f1f;
-            border:1px solid #2a2a2a; border-radius:8px; padding:8px 14px; gap:2px;
-        }
+        .rating-badge { display:flex; flex-direction:column; align-items:center; background:#1f1f1f; border:1px solid #2a2a2a; border-radius:8px; padding:8px 14px; gap:2px; }
         .rating-badge .source { font-size:10px; color:#555; text-transform:uppercase; letter-spacing:1px; }
         .rating-badge .score { font-size:18px; font-weight:600; color:#e50914; }
         .omdb-loading { color:#555; font-size:13px; font-style:italic; }
-        .omdb-error { color:#444; font-size:13px; }
-
         .modal-botoes { display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; }
         .btn-externo {
             flex:1; min-width:120px; padding:10px; border:none; background:#222; color:#aaa;
@@ -145,6 +160,64 @@
         .btn-externo:hover { background:#333; color:white; }
         .btn-imdb { background:#f5c518 !important; color:#000 !important; border-color:#f5c518 !important; }
         .btn-imdb:hover { background:#d4aa14 !important; }
+
+        /* MODAL SÉRIE */
+        .modal-serie {
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.92); display:none; justify-content:center;
+            align-items:center; padding:20px; z-index:999;
+        }
+        .modal-serie-content {
+            background:#161616; width:100%; max-width:960px; border-radius:12px;
+            overflow:hidden; position:relative; box-shadow:0 0 60px rgba(229,9,20,0.25);
+            animation:slideUp 0.25s ease; max-height:92vh; display:flex; flex-direction:column;
+        }
+        .serie-header {
+            display:flex; gap:20px; padding:24px; background:#111;
+            border-bottom:2px solid #222; flex-shrink:0;
+        }
+        .serie-header img { width:100px; height:150px; object-fit:cover; border-radius:8px; flex-shrink:0; background:#222; }
+        .serie-header-info { flex:1; display:flex; flex-direction:column; gap:8px; }
+        .serie-header-info h2 { font-family:'Bebas Neue',cursive; color:#e50914; font-size:1.6rem; letter-spacing:2px; }
+        .serie-header-info p { font-size:13px; color:#999; line-height:1.5; }
+        .serie-header-info .smeta { display:flex; gap:14px; font-size:12px; color:#666; flex-wrap:wrap; }
+        .ep-section { flex:1; overflow-y:auto; padding:20px; }
+        .ep-section h3 { font-family:'Bebas Neue',cursive; font-size:1.2rem; color:#aaa; letter-spacing:2px; margin-bottom:14px; }
+        .ep-list { display:flex; flex-direction:column; gap:10px; }
+        .ep-item {
+            display:flex; gap:14px; background:#1e1e1e; border-radius:8px; padding:12px;
+            cursor:pointer; transition:background 0.2s; align-items:center;
+            border:1px solid #2a2a2a;
+        }
+        .ep-item:hover { background:#2a2a2a; border-color:#e50914; }
+        .ep-thumb { width:130px; height:75px; object-fit:cover; border-radius:6px; flex-shrink:0; background:#111; }
+        .ep-info { flex:1; display:flex; flex-direction:column; gap:4px; }
+        .ep-info .ep-num { font-size:11px; color:#e50914; font-weight:600; letter-spacing:1px; }
+        .ep-info .ep-title { font-size:14px; font-weight:600; color:#fff; }
+        .ep-info .ep-desc { font-size:12px; color:#777; line-height:1.4; }
+        .ep-info .ep-dur { font-size:11px; color:#555; margin-top:2px; }
+        .ep-play {
+            width:40px; height:40px; background:#e50914; border:none; border-radius:50%;
+            color:white; font-size:16px; cursor:pointer; flex-shrink:0;
+            display:flex; align-items:center; justify-content:center;
+            transition:background 0.2s,transform 0.1s;
+        }
+        .ep-play:hover { background:#b8070f; transform:scale(1.1); }
+        .ep-play:disabled { background:#444; cursor:default; transform:none; }
+
+        .ep-player-wrapper {
+            position:relative; width:100%; padding-top:56.25%; background:#000;
+            flex-shrink:0; display:none;
+        }
+        .ep-player-wrapper iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:none; }
+        .ep-player-title {
+            padding:10px 20px; background:#0a0a0a; font-size:13px; color:#aaa;
+            display:none; align-items:center; justify-content:space-between; flex-shrink:0;
+        }
+        .ep-player-title button {
+            background:none; border:none; color:#e50914; cursor:pointer;
+            font-size:13px; font-family:'Barlow',sans-serif; font-weight:600;
+        }
 
         .fechar {
             position:absolute; top:12px; right:16px; font-size:28px; cursor:pointer; color:white;
@@ -158,472 +231,766 @@
         .loading i { font-size:40px; display:block; margin-bottom:12px; animation:spin 1s linear infinite; }
         @keyframes spin { to{transform:rotate(360deg)} }
         .nao-encontrado { grid-column:1/-1; text-align:center; padding:60px; color:#555; }
+        .nao-encontrado i { font-size:48px; display:block; margin-bottom:12px; }
     </style>
 </head>
 <body>
 
 <nav class="catalogo">
     <h2>🎬 Filmes &amp; Séries</h2>
+    <div class="nav-tabs-top">
+        <button class="nav-tab-top ativo" onclick="trocarSecao('filmes')">🎬 Filmes</button>
+        <button class="nav-tab-top" onclick="trocarSecao('series')">📺 Séries Netflix</button>
+    </div>
     <div class="funcao">
-        <input type="text" id="pesquisa" placeholder="Pesquisar filme ou série...">
-        <button onclick="pesquisarFilme()"><i class="bi bi-search"></i></button>
+        <input type="text" id="pesquisa" placeholder="Pesquisar filme...">
+        <button onclick="pesquisar()"><i class="bi bi-search"></i></button>
     </div>
 </nav>
 
 <div class="container">
-    <div class="filmes" id="filmes">
-        <div class="loading" style="grid-column:1/-1">
-            <i class="bi bi-arrow-repeat"></i>Carregando filmes...
+    <div class="secao ativa" id="secao-filmes">
+        <div class="filmes" id="filmes">
+            <div class="loading" style="grid-column:1/-1"><i class="bi bi-arrow-repeat"></i>Carregando filmes...</div>
         </div>
+    </div>
+    <div class="secao" id="secao-series">
+        <div class="series-grid" id="series"></div>
     </div>
 </div>
 
-<!-- MODAL -->
+<!-- MODAL FILME -->
 <div class="modal" id="modal">
     <div class="modal-content">
         <span class="fechar" onclick="fecharModal()">&times;</span>
-
-        <!-- ABAS -->
         <div class="abas">
             <button class="aba ativa" id="aba-filme" onclick="trocarAba('filme')">🎬 Filme Completo</button>
             <button class="aba" id="aba-trailer" onclick="trocarAba('trailer')">▶ Trailer</button>
         </div>
-
-        <!-- PLAYER -->
         <div class="player-wrapper" id="player-wrapper">
             <div class="player-placeholder" id="player-placeholder">
-                <i class="bi bi-play-circle"></i>
+                <i class="bi bi-play-circle" style="font-size:48px;color:#333"></i>
                 <span>Carregando...</span>
             </div>
         </div>
-
         <div class="modal-info">
             <h2 id="modal-titulo"></h2>
             <p id="modal-descricao"></p>
-
             <div class="modal-meta">
                 <div>⭐ <span id="modal-nota"></span></div>
                 <div>📅 <span id="modal-data"></span></div>
                 <div id="modal-runtime" style="display:none">🕐 <span id="modal-runtime-val"></span></div>
                 <div id="modal-rated" style="display:none">🔞 <span id="modal-rated-val"></span></div>
             </div>
-
-            <!-- Tags de gênero (OMDb) -->
             <div class="omdb-tags" id="modal-genres"></div>
-
-            <!-- Detalhes OMDb -->
-            <div id="omdb-section" style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">
                 <div class="omdb-loading" id="omdb-loading">⏳ Buscando informações adicionais...</div>
-                <div id="omdb-director" class="omdb-row" style="display:none">
-                    <span class="label">🎬 Diretor</span><span class="value" id="omdb-director-val"></span>
-                </div>
-                <div id="omdb-cast" class="omdb-row" style="display:none">
-                    <span class="label">🎭 Elenco</span><span class="value" id="omdb-cast-val"></span>
-                </div>
-                <div id="omdb-awards" class="omdb-row" style="display:none">
-                    <span class="label">🏆 Prêmios</span><span class="value" id="omdb-awards-val"></span>
-                </div>
-                <div id="omdb-boxoffice" class="omdb-row" style="display:none">
-                    <span class="label">💰 Bilheteria</span><span class="value" id="omdb-boxoffice-val"></span>
+                <div id="omdb-director" class="omdb-row" style="display:none"><span class="label">🎬 Diretor</span><span class="value" id="omdb-director-val"></span></div>
+                <div id="omdb-cast" class="omdb-row" style="display:none"><span class="label">🎭 Elenco</span><span class="value" id="omdb-cast-val"></span></div>
+                <div id="omdb-awards" class="omdb-row" style="display:none"><span class="label">🏆 Prêmios</span><span class="value" id="omdb-awards-val"></span></div>
+                <div id="omdb-boxoffice" class="omdb-row" style="display:none"><span class="label">💰 Bilheteria</span><span class="value" id="omdb-boxoffice-val"></span></div>
+            </div>
+            <div class="omdb-ratings" id="omdb-ratings"></div>
+            <div class="modal-botoes">
+                <a id="btn-externo" class="btn-externo" target="_blank" rel="noopener"><i class="bi bi-youtube"></i> YouTube</a>
+                <a id="btn-imdb" class="btn-externo btn-imdb" target="_blank" rel="noopener" style="display:none">IMDb</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SÉRIE -->
+<div class="modal-serie" id="modal-serie">
+    <div class="modal-serie-content">
+        <span class="fechar" onclick="fecharModalSerie()">&times;</span>
+        <div class="serie-header">
+            <img id="serie-poster" src="" alt="">
+            <div class="serie-header-info">
+                <h2 id="serie-titulo-modal"></h2>
+                <p id="serie-desc-modal"></p>
+                <div class="smeta">
+                    <span id="serie-ano-modal"></span>
+                    <span id="serie-ep-count"></span>
                 </div>
             </div>
-
-            <!-- Notas OMDb -->
-            <div class="omdb-ratings" id="omdb-ratings"></div>
-
-            <div class="modal-botoes">
-                <a id="btn-externo" class="btn-externo" target="_blank" rel="noopener">
-                    <i class="bi bi-youtube"></i> YouTube
-                </a>
-                <a id="btn-imdb" class="btn-externo btn-imdb" target="_blank" rel="noopener" style="display:none">
-                    IMDb
-                </a>
+        </div>
+        <div class="ep-player-wrapper" id="ep-player-wrapper">
+            <iframe id="ep-iframe" src="" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        </div>
+        <div class="ep-player-title" id="ep-player-title">
+            <span id="ep-player-label"></span>
+            <button onclick="fecharEpPlayer()">✕ Fechar player</button>
+        </div>
+        <div class="ep-section">
+            <h3 id="ep-section-title">Episódios</h3>
+            <div class="ep-list" id="ep-list">
+                <div class="loading"><i class="bi bi-arrow-repeat"></i>Buscando episódios...</div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    const tmdbKey  = "d27c005ce0817bf0169ff28de020eb67";
-    const omdbKey  = "6ae87b45";
-    const filmesContainer = document.getElementById("filmes");
+const tmdbKey  = "d27c005ce0817bf0169ff28de020eb67";
+const omdbKey  = "6ae87b45";
+const ytKey    = "AIzaSyAsS6_YDqVnTnDx1Btn6TatPcKbhgCw9vY";
+const rapidKey = "169e819b60msh6ff7d6d3f98a3f5p19759bjsn0387cf82fc8b";
 
-    let idFilme   = null;
-    let idTrailer = null;
-    let abaAtiva  = "filme";
+const filmesEl  = document.getElementById("filmes");
+const seriesEl  = document.getElementById("series");
 
-    const ytKey = "AIzaSyAsS6_YDqVnTnDx1Btn6TatPcKbhgCw9vY";
+let secaoAtiva = "filmes";
+let idFilme = null, idTrailer = null, abaAtiva = "filme";
+let seriesCarregadas = false;
 
-    // ── TMDB ──────────────────────────────────────
-    async function buscarFilmes() {
-        const url = `https://api.themoviedb.org/3/movie/popular?api_key=${tmdbKey}&language=pt-BR&page=1`;
-        try {
-            const r = await fetch(url);
-            const d = await r.json();
-            mostrarFilmes(d.results);
-        } catch(e) {
-            filmesContainer.innerHTML = `<div class="nao-encontrado">Erro ao carregar filmes.</div>`;
-        }
+// ════════════════════════════════════════════════
+// NAVEGAÇÃO
+// ════════════════════════════════════════════════
+function trocarSecao(sec) {
+    secaoAtiva = sec;
+    document.getElementById("secao-filmes").classList.toggle("ativa", sec === "filmes");
+    document.getElementById("secao-series").classList.toggle("ativa", sec === "series");
+    document.querySelectorAll(".nav-tab-top").forEach((b, i) => {
+        b.classList.toggle("ativo", (i === 0 && sec === "filmes") || (i === 1 && sec === "series"));
+    });
+    document.getElementById("pesquisa").value = "";
+    document.getElementById("pesquisa").placeholder =
+        sec === "filmes" ? "Pesquisar filme..." : "Pesquisar série na Netflix...";
+    if (sec === "series" && !seriesCarregadas) carregarSeries();
+}
+
+function pesquisar() {
+    if (secaoAtiva === "filmes") pesquisarFilme();
+    else pesquisarSerieNetflix();
+}
+
+// ════════════════════════════════════════════════
+// FILMES — TMDB
+// ════════════════════════════════════════════════
+async function buscarFilmes() {
+    const url = `https://api.themoviedb.org/3/movie/popular?api_key=${tmdbKey}&language=pt-BR&page=1`;
+    try {
+        const r = await fetch(url);
+        const d = await r.json();
+        mostrarFilmes(d.results);
+    } catch(e) {
+        filmesEl.innerHTML = `<div class="nao-encontrado">Erro ao carregar filmes.</div>`;
     }
+}
 
-    async function pesquisarFilme() {
-        const texto = document.getElementById("pesquisa").value.trim();
-        if (texto === "") { buscarFilmes(); return; }
-        filmesContainer.innerHTML = `<div class="loading" style="grid-column:1/-1"><i class="bi bi-arrow-repeat"></i>Buscando...</div>`;
-        const url = `https://api.themoviedb.org/3/search/movie?api_key=${tmdbKey}&language=pt-BR&query=${encodeURIComponent(texto)}`;
-        try {
-            const r = await fetch(url);
-            const d = await r.json();
-            mostrarFilmes(d.results);
-        } catch(e) {
-            filmesContainer.innerHTML = `<div class="nao-encontrado">Erro na pesquisa.</div>`;
-        }
+async function pesquisarFilme() {
+    const texto = document.getElementById("pesquisa").value.trim();
+    if (!texto) { buscarFilmes(); return; }
+    filmesEl.innerHTML = `<div class="loading" style="grid-column:1/-1"><i class="bi bi-arrow-repeat"></i>Buscando...</div>`;
+    try {
+        const r = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${tmdbKey}&language=pt-BR&query=${encodeURIComponent(texto)}`);
+        const d = await r.json();
+        mostrarFilmes(d.results);
+    } catch(e) {
+        filmesEl.innerHTML = `<div class="nao-encontrado">Erro na pesquisa.</div>`;
     }
+}
 
-    function mostrarFilmes(filmes) {
-        filmesContainer.innerHTML = "";
-        if (!filmes || filmes.length === 0) {
-            filmesContainer.innerHTML = `<div class="nao-encontrado"><i class="bi bi-film" style="font-size:48px;display:block;margin-bottom:12px;"></i>Nenhum filme encontrado.</div>`;
-            return;
-        }
-        filmes.forEach(filme => {
-            const imagem = filme.poster_path
-                ? `https://image.tmdb.org/t/p/w500${filme.poster_path}`
-                : `https://via.placeholder.com/500x750?text=Sem+Imagem`;
-            const resumo = filme.overview ? filme.overview.substring(0,90)+"..." : "Sem descrição.";
-            const card = document.createElement("div");
-            card.className = "card";
-            card.dataset.id        = filme.id;
-            card.dataset.titulo    = filme.title;
-            card.dataset.tituloEn  = filme.original_title || filme.title;
-            card.dataset.descricao = filme.overview || "Sem descrição.";
-            card.dataset.nota      = filme.vote_average ? filme.vote_average.toFixed(1) : "N/A";
-            card.dataset.data      = filme.release_date || "Desconhecido";
-            card.dataset.ano       = filme.release_date ? filme.release_date.substring(0,4) : "";
-            card.innerHTML = `
-                <img src="${imagem}" alt="${filme.title}" loading="lazy">
-                <div class="card-overlay">
-                    <button class="play-btn-overlay" onclick="abrirPlayer(${filme.id},event)">▶ Assistir</button>
-                </div>
-                <div class="info">
-                    <h3>${filme.title}</h3>
-                    <p>${resumo}</p>
-                    <button onclick="abrirPlayer(${filme.id},event)">▶ Assistir</button>
-                </div>
-            `;
-            card.addEventListener("click", () => abrirPlayer(filme.id));
-            filmesContainer.appendChild(card);
-        });
+function mostrarFilmes(filmes) {
+    filmesEl.innerHTML = "";
+    if (!filmes || !filmes.length) {
+        filmesEl.innerHTML = `<div class="nao-encontrado"><i class="bi bi-film"></i>Nenhum filme encontrado.</div>`;
+        return;
     }
+    filmes.forEach(f => {
+        const img = f.poster_path ? `https://image.tmdb.org/t/p/w500${f.poster_path}` : `https://placehold.co/500x750/111/333?text=Sem+Imagem`;
+        const resumo = f.overview ? f.overview.substring(0, 90) + "..." : "Sem descrição.";
+        const card = document.createElement("div");
+        card.className = "card";
+        card.dataset.id        = f.id;
+        card.dataset.titulo    = f.title;
+        card.dataset.tituloEn  = f.original_title || f.title;
+        card.dataset.descricao = f.overview || "Sem descrição.";
+        card.dataset.nota      = f.vote_average ? f.vote_average.toFixed(1) : "N/A";
+        card.dataset.data      = f.release_date || "Desconhecido";
+        card.dataset.ano       = f.release_date ? f.release_date.substring(0,4) : "";
+        card.innerHTML = `
+            <img src="${img}" alt="${f.title}" loading="lazy">
+            <div class="card-overlay">
+                <button class="play-btn-overlay" onclick="abrirFilme(${f.id},event)">▶ Assistir</button>
+            </div>
+            <div class="info">
+                <h3>${f.title}</h3>
+                <p>${resumo}</p>
+                <button onclick="abrirFilme(${f.id},event)">▶ Assistir</button>
+            </div>`;
+        card.addEventListener("click", () => abrirFilme(f.id));
+        filmesEl.appendChild(card);
+    });
+}
 
-    // ── OMDB ──────────────────────────────────────
-    async function buscarOmdb(titulo, ano) {
-        try {
-            // Busca por título (e ano se disponível)
-            let url = `https://www.omdbapi.com/?t=${encodeURIComponent(titulo)}&apikey=${omdbKey}&type=movie`;
-            if (ano) url += `&y=${ano}`;
-            const r = await fetch(url);
-            const d = await r.json();
-            if (d.Response === "True") return d;
+// ════════════════════════════════════════════════
+// SÉRIES — NETFLIX API (RapidAPI netflix54)
+// ════════════════════════════════════════════════
 
-            // Fallback: só título sem ano
-            if (ano) {
-                const url2 = `https://www.omdbapi.com/?t=${encodeURIComponent(titulo)}&apikey=${omdbKey}&type=movie`;
-                const r2 = await fetch(url2);
-                const d2 = await r2.json();
-                if (d2.Response === "True") return d2;
+// Lista estática de fallback com imagens do TMDB
+const seriesFallback = [
+    { id:"80057281", titulo:"Stranger Things",  tituloEn:"Stranger Things",  ano:"2016", tmdb:66732  },
+    { id:"80077209", titulo:"Narcos",            tituloEn:"Narcos",            ano:"2015", tmdb:63351  },
+    { id:"80117715", titulo:"La Casa de Papel",  tituloEn:"Money Heist",       ano:"2017", tmdb:71446  },
+    { id:"80189685", titulo:"Dark",              tituloEn:"Dark",              ano:"2017", tmdb:70523  },
+    { id:"80192098", titulo:"You",               tituloEn:"You",               ano:"2018", tmdb:78191  },
+    { id:"80999742", titulo:"Ozark",             tituloEn:"Ozark",             ano:"2017", tmdb:69737  },
+    { id:"81040344", titulo:"The Witcher",        tituloEn:"The Witcher",       ano:"2019", tmdb:71912  },
+    { id:"81002370", titulo:"Bridgerton",         tituloEn:"Bridgerton",        ano:"2020", tmdb:93405  },
+    { id:"81056800", titulo:"Round 6",            tituloEn:"Squid Game",        ano:"2021", tmdb:100088 },
+    { id:"81231974", titulo:"Wednesday",          tituloEn:"Wednesday",         ano:"2022", tmdb:119051 },
+    { id:"80100172", titulo:"Black Mirror",       tituloEn:"Black Mirror",      ano:"2011", tmdb:42009  },
+    { id:"80994082", titulo:"Mindhunter",         tituloEn:"Mindhunter",        ano:"2017", tmdb:67744  },
+];
+
+async function carregarSeries() {
+    seriesCarregadas = true;
+    seriesEl.innerHTML = `<div class="loading" style="grid-column:1/-1"><i class="bi bi-arrow-repeat"></i>Buscando séries na Netflix...</div>`;
+
+    // Tenta buscar da API da Netflix primeiro
+    const resultados = await buscarNetflixPorTitulo("popular series 2024");
+    
+    seriesEl.innerHTML = "";
+
+    if (resultados && resultados.length > 0) {
+        const vistos = new Set();
+        resultados.forEach(item => {
+            const s = normalizarNetflix(item);
+            if (s.id && !vistos.has(s.id)) {
+                vistos.add(s.id);
+                seriesEl.appendChild(criarCardSerie(s));
             }
+        });
+    } else {
+        // Fallback: lista estática com imagens do TMDB
+        await renderizarFallback();
+    }
+}
 
-            return null;
-        } catch(e) { return null; }
+async function pesquisarSerieNetflix() {
+    const texto = document.getElementById("pesquisa").value.trim();
+    if (!texto) { seriesCarregadas = false; carregarSeries(); return; }
+
+    seriesEl.innerHTML = `<div class="loading" style="grid-column:1/-1"><i class="bi bi-arrow-repeat"></i>Buscando na Netflix...</div>`;
+    const resultados = await buscarNetflixPorTitulo(texto);
+    seriesEl.innerHTML = "";
+
+    if (!resultados || !resultados.length) {
+        // Fallback: filtra lista estática pelo texto
+        const filtradas = seriesFallback.filter(s =>
+            s.titulo.toLowerCase().includes(texto.toLowerCase()) ||
+            s.tituloEn.toLowerCase().includes(texto.toLowerCase())
+        );
+        if (filtradas.length > 0) {
+            await renderizarFallback(filtradas);
+        } else {
+            seriesEl.innerHTML = `<div class="nao-encontrado" style="grid-column:1/-1"><i class="bi bi-tv"></i>Nenhuma série encontrada na Netflix.</div>`;
+        }
+        return;
     }
 
-    function renderizarOmdb(data) {
-        document.getElementById("omdb-loading").style.display = "none";
-
-        if (!data) {
-            document.getElementById("omdb-loading").textContent = "";
-            return;
+    const vistos = new Set();
+    resultados.forEach(item => {
+        const s = normalizarNetflix(item);
+        if (s.id && !vistos.has(s.id)) {
+            vistos.add(s.id);
+            seriesEl.appendChild(criarCardSerie(s));
         }
+    });
+}
 
-        // Runtime
-        if (data.Runtime && data.Runtime !== "N/A") {
-            document.getElementById("modal-runtime").style.display = "";
-            document.getElementById("modal-runtime-val").textContent = data.Runtime;
+async function buscarNetflixPorTitulo(query) {
+    const url = `https://netflix54.p.rapidapi.com/search/?q=${encodeURIComponent(query)}&offset=0&limit=20&lang=en`;
+    try {
+        const r = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'x-rapidapi-key': rapidKey,
+                'x-rapidapi-host': 'netflix54.p.rapidapi.com'
+            }
+        });
+        if (!r.ok) throw new Error(r.status);
+        const raw = await r.text();
+        console.log('[Netflix Search] raw:', raw.substring(0, 400));
+        const data = JSON.parse(raw);
+        if (Array.isArray(data))        return data;
+        if (data.results)               return data.results;
+        if (data.result)                return Array.isArray(data.result) ? data.result : [data.result];
+        if (data.titles)                return data.titles;
+        if (data.items)                 return data.items;
+        // Procura qualquer array no objeto
+        for (const k of Object.keys(data)) {
+            if (Array.isArray(data[k]) && data[k].length > 0) return data[k];
         }
-
-        // Classificação etária
-        if (data.Rated && data.Rated !== "N/A") {
-            document.getElementById("modal-rated").style.display = "";
-            document.getElementById("modal-rated-val").textContent = data.Rated;
-        }
-
-        // Gêneros como tags
-        if (data.Genre && data.Genre !== "N/A") {
-            const container = document.getElementById("modal-genres");
-            data.Genre.split(",").forEach(g => {
-                const tag = document.createElement("span");
-                tag.className = "tag";
-                tag.textContent = g.trim();
-                container.appendChild(tag);
-            });
-        }
-
-        // Diretor
-        if (data.Director && data.Director !== "N/A") {
-            document.getElementById("omdb-director").style.display = "flex";
-            document.getElementById("omdb-director-val").textContent = data.Director;
-        }
-
-        // Elenco
-        if (data.Actors && data.Actors !== "N/A") {
-            document.getElementById("omdb-cast").style.display = "flex";
-            document.getElementById("omdb-cast-val").textContent = data.Actors;
-        }
-
-        // Prêmios
-        if (data.Awards && data.Awards !== "N/A" && data.Awards !== "N/A.") {
-            document.getElementById("omdb-awards").style.display = "flex";
-            document.getElementById("omdb-awards-val").textContent = data.Awards;
-        }
-
-        // Bilheteria
-        if (data.BoxOffice && data.BoxOffice !== "N/A") {
-            document.getElementById("omdb-boxoffice").style.display = "flex";
-            document.getElementById("omdb-boxoffice-val").textContent = data.BoxOffice;
-        }
-
-        // Ratings (IMDb, Rotten Tomatoes, Metacritic)
-        const ratingsContainer = document.getElementById("omdb-ratings");
-        const sourceMap = { "Internet Movie Database":"IMDb", "Rotten Tomatoes":"Rotten", "Metacritic":"Meta" };
-        if (data.Ratings && data.Ratings.length > 0) {
-            data.Ratings.forEach(r => {
-                const badge = document.createElement("div");
-                badge.className = "rating-badge";
-                const src = sourceMap[r.Source] || r.Source;
-                badge.innerHTML = `<span class="source">${src}</span><span class="score">${r.Value}</span>`;
-                ratingsContainer.appendChild(badge);
-            });
-        }
-
-        // Botão IMDb
-        if (data.imdbID) {
-            const btnImdb = document.getElementById("btn-imdb");
-            btnImdb.href = `https://www.imdb.com/title/${data.imdbID}/`;
-            btnImdb.style.display = "flex";
-        }
+        return [];
+    } catch(e) {
+        console.warn('[Netflix Search] falhou:', e.message);
+        return [];
     }
+}
 
-    // ── YOUTUBE DATA API v3: busca filme completo ─
-    async function buscarFilmeYT(titulo, tituloEn) {
-        const queries = [
-            `${titulo} filme completo dublado`,
-            `${tituloEn || titulo} full movie free`,
-            `${titulo} filme completo`,
-            `${tituloEn || titulo} full movie`
-        ];
+function normalizarNetflix(item) {
+    const id     = String(item.id || item.netflixId || item.show_id || "");
+    const titulo = item.title || item.name || item.originalTitle || "Sem título";
+    const ano    = String(item.year || item.releaseYear || item.firstAirYear || "");
+    // Poster — vários campos possíveis da netflix54
+    const poster = item.boxart || item.poster || item.posterUrl || item.artwork
+                || item.image  || item.img
+                || (item.thumbs && item.thumbs[0])
+                || (item.images && item.images[0] && item.images[0].url)
+                || "";
+    const desc   = item.synopsis || item.summary || item.description || item.plot || "";
+    return { id, titulo, ano, poster, desc };
+}
 
-        for (const q of queries) {
+// Renderiza lista estática buscando imagens no TMDB
+async function renderizarFallback(lista) {
+    const alvo = lista || seriesFallback;
+    for (const s of alvo) {
+        let poster = "";
+        if (s.tmdb) {
             try {
-                // 1ª etapa: busca os candidatos
-                const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(q)}&videoEmbeddable=true&videoDuration=long&maxResults=10&key=${ytKey}`;
-                const r = await fetch(searchUrl);
-                if (!r.ok) continue;
-                const data = await r.json();
-                if (!data.items || data.items.length === 0) continue;
-
-                const ids = data.items.map(i => i.id.videoId).join(",");
-
-                // 2ª etapa: verifica duração real (>= 60 min)
-                const detailUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,status&id=${ids}&key=${ytKey}`;
-                const r2 = await fetch(detailUrl);
-                if (!r2.ok) continue;
-                const detail = await r2.json();
-
-                for (const item of detail.items) {
-                    // Só vídeos incorporáveis
-                    if (!item.status.embeddable) continue;
-
-                    // Converte duração ISO 8601 (PT1H23M45S) para segundos
-                    const dur = item.contentDetails.duration;
-                    const match = dur.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-                    if (!match) continue;
-                    const h = parseInt(match[1] || 0);
-                    const m = parseInt(match[2] || 0);
-                    const s = parseInt(match[3] || 0);
-                    const totalSeg = h * 3600 + m * 60 + s;
-
-                    if (totalSeg >= 3600) return item.id; // filme encontrado!
-                }
-            } catch(e) { continue; }
-        }
-        return false;
-    }
-
-    // ── TMDB: busca trailer ───────────────────────
-    async function buscarTrailerTMDB(id) {
-        const urls = [
-            `https://api.themoviedb.org/3/movie/${id}/videos?api_key=${tmdbKey}&language=pt-BR`,
-            `https://api.themoviedb.org/3/movie/${id}/videos?api_key=${tmdbKey}&language=en-US`
-        ];
-        for (const url of urls) {
-            try {
-                const r = await fetch(url);
+                const r = await fetch(`https://api.themoviedb.org/3/tv/${s.tmdb}?api_key=${tmdbKey}`);
                 const d = await r.json();
-                const t = d.results.find(v => v.type === "Trailer" && v.site === "YouTube");
-                if (t) return t.key;
+                if (d.poster_path) poster = `https://image.tmdb.org/t/p/w500${d.poster_path}`;
             } catch(e) {}
         }
-        return false;
+        seriesEl.appendChild(criarCardSerie({ id: s.id, titulo: s.titulo, ano: s.ano, poster, desc: "" }));
     }
+}
 
-    // ── ABRIR PLAYER ──────────────────────────────
-    async function abrirPlayer(id, event) {
-        if (event) event.stopPropagation();
+function criarCardSerie(serie) {
+    const card = document.createElement("div");
+    card.className = "serie-card";
 
-        const card = document.querySelector(`.card[data-id="${id}"]`);
-        const titulo    = card ? card.dataset.titulo    : "";
-        const tituloEn  = card ? card.dataset.tituloEn  : titulo;
-        const descricao = card ? card.dataset.descricao : "";
-        const nota      = card ? card.dataset.nota      : "";
-        const data      = card ? card.dataset.data      : "";
-        const ano       = card ? card.dataset.ano       : "";
+    const omdbFallback = `https://img.omdbapi.com/?t=${encodeURIComponent(serie.titulo)}&apikey=${omdbKey}&h=600`;
+    const placeholder  = `https://placehold.co/500x750/111/333?text=${encodeURIComponent(serie.titulo)}`;
 
-        // Reset estado
-        idFilme = null; idTrailer = null; abaAtiva = "filme";
+    const imgSrc = serie.poster || omdbFallback;
 
-        // Abre modal
-        document.getElementById("modal").style.display = "flex";
-        document.getElementById("modal-titulo").innerText    = titulo;
-        document.getElementById("modal-descricao").innerText = descricao;
-        document.getElementById("modal-nota").innerText      = nota;
-        document.getElementById("modal-data").innerText      = data;
+    card.innerHTML = `
+        <img src="${imgSrc}" alt="${serie.titulo}" loading="lazy"
+             onerror="if(this.src!=='${omdbFallback}'){this.src='${omdbFallback}';}else{this.src='${placeholder}';}">
+        <div class="netflix-badge">
+            <svg width="14" height="10" viewBox="0 0 111 30" fill="white" xmlns="http://www.w3.org/2000/svg">
+                <path d="M105.062 14.28L111 30c-1.75-.25-3.499-.563-5.28-.845l-3.345-8.686-3.437 7.969c-1.687-.282-3.344-.376-5.031-.595l6.031-13.75L94.468 0h5.063l3.062 7.874L105.875 0h5.124l-5.937 14.28zM90.47 0h-4.594v27.25c1.5.094 3.062.156 4.594.343V0zm-8.937 26.937c-4.187-.281-8.375-.53-12.656-.625V0h4.687v21.875c2.688.062 5.375.28 7.969.405v4.657zM64.25 10.657v4.687h-6.406V26H53.22V0h13.125v4.687h-8.5v5.97h6.406zm-18.906-5.97H38.69V26.25c-1.563 0-3.156 0-4.688.031V4.687h-5.656V0H45.344v4.687zm-23.563 17c-3.812 0-7.75-.062-11.5-.093V0H14.97v21.562c2.062.032 4.187.032 6.25.094v4.03H.001V0h4.687v21.938c2.781.03 5.594.062 8.375.062l8.718-21.938H26.5V26.5c-1.5-.031-3.094-.062-4.719-.062V10.687z"/>
+            </svg>
+            NETFLIX
+        </div>
+        <div class="info">
+            <h3>${serie.titulo}</h3>
+            <p>${serie.ano ? serie.ano + " · " : ""}Série</p>
+            <button onclick="event.stopPropagation();abrirSerie('${serie.id}','${serie.titulo.replace(/'/g,"\\'").replace(/"/g,"&quot;")}','${serie.ano||""}')">
+                📺 Ver Episódios
+            </button>
+        </div>`;
+    card.addEventListener("click", () => abrirSerie(serie.id, serie.titulo, serie.ano || ""));
+    return card;
+}
 
-        // Reset campos OMDb
-        document.getElementById("modal-runtime").style.display = "none";
-        document.getElementById("modal-rated").style.display = "none";
-        document.getElementById("modal-genres").innerHTML = "";
-        document.getElementById("omdb-loading").style.display = "";
-        document.getElementById("omdb-loading").textContent = "⏳ Buscando informações adicionais...";
-        document.getElementById("omdb-director").style.display = "none";
-        document.getElementById("omdb-cast").style.display = "none";
-        document.getElementById("omdb-awards").style.display = "none";
-        document.getElementById("omdb-boxoffice").style.display = "none";
-        document.getElementById("omdb-ratings").innerHTML = "";
-        document.getElementById("btn-imdb").style.display = "none";
+// ════════════════════════════════════════════════
+// MODAL SÉRIE — episódios
+// ════════════════════════════════════════════════
+async function abrirSerie(id, titulo, ano) {
+    fecharEpPlayer();
+    document.getElementById("modal-serie").style.display = "flex";
+    document.getElementById("serie-titulo-modal").textContent = titulo;
+    document.getElementById("serie-desc-modal").textContent  = "Carregando...";
+    document.getElementById("serie-ano-modal").textContent   = ano;
+    document.getElementById("serie-ep-count").textContent    = "";
+    document.getElementById("ep-section-title").textContent  = "Episódios";
+    document.getElementById("ep-list").innerHTML = `<div class="loading"><i class="bi bi-arrow-repeat"></i>Buscando episódios...</div>`;
 
-        // Abas loading
-        const abaFilme   = document.getElementById("aba-filme");
-        const abaTrailer = document.getElementById("aba-trailer");
-        abaFilme.className   = "aba ativa loading-aba";
-        abaFilme.textContent = "⏳ Buscando filme...";
-        abaTrailer.className   = "aba loading-aba";
-        abaTrailer.textContent = "⏳ Buscando trailer...";
+    // Poster no modal: tenta TMDB por título, depois OMDb
+    const posterModal = `https://img.omdbapi.com/?t=${encodeURIComponent(titulo)}&apikey=${omdbKey}&h=300`;
+    document.getElementById("serie-poster").src = posterModal;
 
-        document.getElementById("btn-externo").href =
-            `https://www.youtube.com/results?search_query=${encodeURIComponent(titulo+" filme completo dublado")}`;
+    // Info OMDb
+    buscarOmdbSerie(titulo, ano).then(d => {
+        if (d) document.getElementById("serie-desc-modal").textContent = d.Plot && d.Plot !== "N/A" ? d.Plot : "Sem descrição.";
+    });
 
-        setIframe(null);
-        showPlaceholder(`<i class="bi bi-arrow-repeat" style="animation:spin 1s linear infinite;font-size:40px;color:#e50914"></i><span>Buscando filme completo no YouTube...</span>`);
+    // Episódios Netflix
+    const data = await buscarEpisodiosNetflix(id);
+    renderizarEpisodios(data, titulo);
+}
 
-        // Busca OMDb em paralelo
-        buscarOmdb(tituloEn, ano).then(omdbData => renderizarOmdb(omdbData));
-
-        buscarFilmeYT(titulo, tituloEn).then(videoId => {
-            idFilme = videoId;
-            abaFilme.className   = videoId ? "aba ativa" : "aba indisponivel";
-            abaFilme.textContent = videoId ? "🎬 Filme Completo" : "🎬 Não disponível";
-            if (abaAtiva === "filme") renderAba();
+async function buscarEpisodiosNetflix(serieId) {
+    // Passo 1: busca temporadas
+    let seasonId = serieId; // fallback: usa o próprio ID da série como season
+    try {
+        const r = await fetch(`https://netflix54.p.rapidapi.com/title/seasons/?id=${serieId}&lang=en`, {
+            method:'GET',
+            headers:{ 'x-rapidapi-key': rapidKey, 'x-rapidapi-host': 'netflix54.p.rapidapi.com' }
         });
+        if (r.ok) {
+            const raw = await r.text();
+            console.log('[Seasons] raw:', raw.substring(0,300));
+            const data = JSON.parse(raw);
+            let lista = [];
+            if (Array.isArray(data))   lista = data;
+            else if (data.seasons)     lista = data.seasons;
+            else if (data.result)      lista = Array.isArray(data.result) ? data.result : [data.result];
+            else {
+                for (const k of Object.keys(data)) {
+                    if (Array.isArray(data[k]) && data[k].length) { lista = data[k]; break; }
+                }
+            }
+            if (lista.length > 0) {
+                seasonId = lista[0].id || lista[0].seasonId || lista[0] || serieId;
+            }
+        }
+    } catch(e) { console.warn('[Seasons] erro:', e.message); }
 
-        buscarTrailerTMDB(id).then(videoId => {
-            idTrailer = videoId;
-            abaTrailer.className   = videoId ? "aba" : "aba indisponivel";
-            abaTrailer.textContent = videoId ? "▶ Trailer" : "▶ Sem trailer";
-            if (abaAtiva === "filme" && idFilme === null && videoId) {
-                showPlaceholder(`<i class="bi bi-arrow-repeat" style="animation:spin 1s linear infinite;font-size:40px;color:#e50914"></i><span>Buscando filme completo... (trailer disponível na aba acima)</span>`);
+    // Passo 2: busca episódios da temporada
+    try {
+        const url = `https://netflix54.p.rapidapi.com/season/episodes/?ids=${seasonId}&offset=0&limit=25&lang=en`;
+        const r = await fetch(url, {
+            method:'GET',
+            headers:{
+                'x-rapidapi-key': rapidKey,
+                'x-rapidapi-host': 'netflix54.p.rapidapi.com',
+                'Content-Type': 'application/json'
             }
         });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const raw = await r.text();
+        console.log('[Episodes] raw:', raw.substring(0, 400));
+        return JSON.parse(raw);
+    } catch(e) {
+        console.warn('[Episodes] erro:', e.message);
+        return null;
     }
+}
 
-    // ── TROCAR ABA ────────────────────────────────
-    function trocarAba(aba) {
-        const abaFilmeEl   = document.getElementById("aba-filme");
-        const abaTrailerEl = document.getElementById("aba-trailer");
-        if (aba === "filme"   && abaFilmeEl.classList.contains("indisponivel")) return;
-        if (aba === "trailer" && abaTrailerEl.classList.contains("indisponivel")) return;
-        abaAtiva = aba;
-        abaFilmeEl.classList.toggle("ativa",   aba === "filme");
-        abaTrailerEl.classList.toggle("ativa", aba === "trailer");
-        renderAba();
-    }
+function renderizarEpisodios(data, serieTitulo) {
+    const list = document.getElementById("ep-list");
+    let eps = [];
 
-    function renderAba() {
-        if (abaAtiva === "filme") {
-            if (idFilme === null) {
-                showPlaceholder(`<i class="bi bi-arrow-repeat" style="animation:spin 1s linear infinite;font-size:40px;color:#e50914"></i><span>Buscando filme completo no YouTube...</span>`);
-            } else if (idFilme === false) {
-                showPlaceholder(`
-                    <i class="bi bi-film" style="font-size:40px;color:#333"></i>
-                    <span>Filme completo não encontrado no YouTube.</span>
-                    <a href="${document.getElementById("btn-externo").href}" target="_blank"
-                       style="color:#e50914;margin-top:8px;font-size:13px;">Buscar manualmente →</a>
-                `);
-            } else {
-                document.getElementById("btn-externo").href = `https://www.youtube.com/watch?v=${idFilme}`;
-                setIframe(idFilme);
-            }
-        } else {
-            if (idTrailer === null) {
-                showPlaceholder(`<i class="bi bi-arrow-repeat" style="animation:spin 1s linear infinite;font-size:40px;color:#e50914"></i><span>Buscando trailer...</span>`);
-            } else if (idTrailer === false) {
-                showPlaceholder(`<i class="bi bi-exclamation-circle" style="font-size:40px;color:#333"></i><span>Trailer não encontrado.</span>`);
-            } else {
-                document.getElementById("btn-externo").href = `https://www.youtube.com/watch?v=${idTrailer}`;
-                setIframe(idTrailer);
+    if (data) {
+        if (Array.isArray(data))              eps = data;
+        else if (data.episodes)               eps = data.episodes;
+        else if (data.result)                 eps = Array.isArray(data.result) ? data.result : [];
+        else if (data.data)                   eps = Array.isArray(data.data) ? data.data : [];
+        else {
+            // chaves numéricas (ex: {"80077209":[...]})
+            for (const k of Object.keys(data)) {
+                if (Array.isArray(data[k]) && data[k].length) {
+                    eps = [...eps, ...data[k]];
+                } else if (data[k] && data[k].episodes) {
+                    eps = [...eps, ...data[k].episodes];
+                }
             }
         }
     }
 
-    function setIframe(videoId) {
-        const wrapper = document.getElementById("player-wrapper");
-        const old = wrapper.querySelector("iframe");
-        if (old) old.remove();
-        document.getElementById("player-placeholder").style.display = "none";
-        if (!videoId) return;
-        const iframe = document.createElement("iframe");
-        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
-        iframe.allow = "autoplay; fullscreen; picture-in-picture";
-        iframe.allowFullscreen = true;
-        wrapper.appendChild(iframe);
+    if (!eps.length) {
+        // Fallback: lista de 20 episódios para buscar no YouTube
+        list.innerHTML = "";
+        document.getElementById("serie-ep-count").textContent = "via YouTube";
+        for (let i = 1; i <= 20; i++) {
+            list.appendChild(criarEpItem(serieTitulo, 1, i, `Episódio ${i}`, "", "", ""));
+        }
+        return;
     }
 
-    function showPlaceholder(html) {
-        const wrapper = document.getElementById("player-wrapper");
-        const old = wrapper.querySelector("iframe");
-        if (old) old.remove();
-        const ph = document.getElementById("player-placeholder");
-        ph.style.display = "flex";
-        ph.innerHTML = html;
-    }
+    document.getElementById("serie-ep-count").textContent = `${eps.length} episódios`;
+    list.innerHTML = "";
+    eps.forEach((ep, idx) => {
+        const titulo  = ep.episodeTitle || ep.title || ep.name || `Episódio ${idx+1}`;
+        const desc    = ep.synopsis     || ep.description || ep.overview || "";
+        const epNum   = ep.episode      || ep.episodeNumber || ep.ep || idx+1;
+        const season  = ep.season       || ep.seasonNumber  || ep.s  || 1;
+        const dur     = ep.runtime      ? `${Math.floor(ep.runtime/60)}min` : "";
+        const thumb   = (ep.stills && ep.stills[0] && ep.stills[0].url)
+                      || ep.thumbnail || ep.image || ep.screenshotUrl || "";
+        list.appendChild(criarEpItem(serieTitulo, season, epNum, titulo, desc, dur, thumb));
+    });
+}
 
-    // ── FECHAR ────────────────────────────────────
-    function fecharModal() {
-        document.getElementById("modal").style.display = "none";
-        const iframe = document.getElementById("player-wrapper").querySelector("iframe");
-        if (iframe) iframe.remove();
-        idFilme = null; idTrailer = null;
-    }
+function criarEpItem(serie, season, epNum, titulo, desc, dur, thumb) {
+    const item = document.createElement("div");
+    item.className = "ep-item";
+    const safeS = serie.replace(/'/g,"\\'").replace(/"/g,"&quot;");
+    const safeT = titulo.replace(/'/g,"\\'").replace(/"/g,"&quot;");
+    item.innerHTML = `
+        ${thumb
+            ? `<img class="ep-thumb" src="${thumb}" loading="lazy" onerror="this.style.display='none'">`
+            : `<div class="ep-thumb" style="background:#111;display:flex;align-items:center;justify-content:center;color:#444;font-size:24px;">▶</div>`
+        }
+        <div class="ep-info">
+            <div class="ep-num">T${season} · EP ${epNum}</div>
+            <div class="ep-title">${titulo}</div>
+            ${desc ? `<div class="ep-desc">${desc.substring(0,120)}${desc.length>120?"...":""}</div>` : ""}
+            ${dur  ? `<div class="ep-dur">⏱ ${dur}</div>` : ""}
+        </div>
+        <button class="ep-play" onclick="buscarEpYT('${safeS}',${season},${epNum},'${safeT}',this)">▶</button>`;
+    return item;
+}
 
-    document.getElementById("modal").addEventListener("click", function(e) {
-        if (e.target === this) fecharModal();
+async function buscarEpYT(serie, season, epNum, titulo, btn) {
+    btn.textContent = "⏳";
+    btn.disabled = true;
+    const queries = [
+        `${serie} temporada ${season} episodio ${epNum} dublado`,
+        `${serie} season ${season} episode ${epNum}`,
+        `${serie} S${String(season).padStart(2,"0")}E${String(epNum).padStart(2,"0")}`
+    ];
+    let videoId = null;
+    for (const q of queries) {
+        try {
+            const r = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(q)}&videoEmbeddable=true&maxResults=5&key=${ytKey}`);
+            const d = await r.json();
+            if (d.items && d.items.length) { videoId = d.items[0].id.videoId; break; }
+        } catch(e) {}
+    }
+    btn.textContent = "▶";
+    btn.disabled = false;
+    if (videoId) {
+        abrirEpPlayer(videoId, `T${season} · EP ${epNum} — ${titulo}`);
+    } else {
+        window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(`${serie} temporada ${season} episodio ${epNum} dublado`)}`, "_blank");
+    }
+}
+
+function abrirEpPlayer(videoId, label) {
+    const wrapper = document.getElementById("ep-player-wrapper");
+    const bar     = document.getElementById("ep-player-title");
+    document.getElementById("ep-iframe").src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+    wrapper.style.display = "block";
+    bar.style.display = "flex";
+    document.getElementById("ep-player-label").textContent = label;
+    wrapper.scrollIntoView({ behavior:"smooth", block:"start" });
+}
+
+function fecharEpPlayer() {
+    document.getElementById("ep-iframe").src = "";
+    document.getElementById("ep-player-wrapper").style.display = "none";
+    document.getElementById("ep-player-title").style.display   = "none";
+}
+
+function fecharModalSerie() {
+    fecharEpPlayer();
+    document.getElementById("modal-serie").style.display = "none";
+}
+
+// ════════════════════════════════════════════════
+// OMDB (filmes e séries)
+// ════════════════════════════════════════════════
+async function buscarOmdb(titulo, ano) {
+    try {
+        const r = await fetch(`https://www.omdbapi.com/?t=${encodeURIComponent(titulo)}&apikey=${omdbKey}&type=movie${ano?"&y="+ano:""}`);
+        const d = await r.json();
+        return d.Response === "True" ? d : null;
+    } catch(e) { return null; }
+}
+
+async function buscarOmdbSerie(titulo, ano) {
+    try {
+        const r = await fetch(`https://www.omdbapi.com/?t=${encodeURIComponent(titulo)}&apikey=${omdbKey}&type=series${ano?"&y="+ano:""}`);
+        const d = await r.json();
+        return d.Response === "True" ? d : null;
+    } catch(e) { return null; }
+}
+
+function renderizarOmdb(d) {
+    document.getElementById("omdb-loading").style.display = "none";
+    if (!d) return;
+    const set = (id, val) => { if (val && val !== "N/A") { document.getElementById(id).style.display=""; document.getElementById(id+"-val").textContent=val; } };
+    set("modal-runtime", d.Runtime);
+    set("modal-rated",   d.Rated);
+    if (d.Genre && d.Genre !== "N/A") {
+        const c = document.getElementById("modal-genres");
+        d.Genre.split(",").forEach(g => { const t=document.createElement("span"); t.className="tag"; t.textContent=g.trim(); c.appendChild(t); });
+    }
+    const setRow = (id, val) => { if (val && val !== "N/A") { document.getElementById(id).style.display="flex"; document.getElementById(id+"-val").textContent=val; } };
+    setRow("omdb-director",  d.Director);
+    setRow("omdb-cast",      d.Actors);
+    setRow("omdb-awards",    d.Awards);
+    setRow("omdb-boxoffice", d.BoxOffice);
+    const sm = {"Internet Movie Database":"IMDb","Rotten Tomatoes":"Rotten","Metacritic":"Meta"};
+    if (d.Ratings && d.Ratings.length) {
+        const rc = document.getElementById("omdb-ratings");
+        d.Ratings.forEach(r => {
+            const b = document.createElement("div"); b.className="rating-badge";
+            b.innerHTML=`<span class="source">${sm[r.Source]||r.Source}</span><span class="score">${r.Value}</span>`;
+            rc.appendChild(b);
+        });
+    }
+    if (d.imdbID) { const btn=document.getElementById("btn-imdb"); btn.href=`https://www.imdb.com/title/${d.imdbID}/`; btn.style.display="flex"; }
+}
+
+// ════════════════════════════════════════════════
+// YOUTUBE — filme completo
+// ════════════════════════════════════════════════
+async function buscarFilmeYT(titulo, tituloEn) {
+    const queries = [
+        `${titulo} filme completo dublado`,
+        `${tituloEn||titulo} full movie free`,
+        `${titulo} filme completo`,
+        `${tituloEn||titulo} full movie`
+    ];
+    for (const q of queries) {
+        try {
+            const r  = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(q)}&videoEmbeddable=true&videoDuration=long&maxResults=10&key=${ytKey}`);
+            if (!r.ok) continue;
+            const d  = await r.json();
+            if (!d.items || !d.items.length) continue;
+            const ids = d.items.map(i => i.id.videoId).join(",");
+            const r2 = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails,status&id=${ids}&key=${ytKey}`);
+            if (!r2.ok) continue;
+            const d2 = await r2.json();
+            for (const item of d2.items) {
+                if (!item.status.embeddable) continue;
+                const m = item.contentDetails.duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+                if (!m) continue;
+                const total = (parseInt(m[1]||0)*3600)+(parseInt(m[2]||0)*60)+parseInt(m[3]||0);
+                if (total >= 3600) return item.id;
+            }
+        } catch(e) { continue; }
+    }
+    return false;
+}
+
+async function buscarTrailerTMDB(id) {
+    for (const lang of ["pt-BR","en-US"]) {
+        try {
+            const r = await fetch(`https://api.themoviedb.org/3/movie/${id}/videos?api_key=${tmdbKey}&language=${lang}`);
+            const d = await r.json();
+            const t = d.results.find(v => v.type==="Trailer" && v.site==="YouTube");
+            if (t) return t.key;
+        } catch(e) {}
+    }
+    return false;
+}
+
+// ════════════════════════════════════════════════
+// MODAL FILME
+// ════════════════════════════════════════════════
+async function abrirFilme(id, event) {
+    if (event) event.stopPropagation();
+    const card = document.querySelector(`.card[data-id="${id}"]`);
+    const titulo    = card?.dataset.titulo    || "";
+    const tituloEn  = card?.dataset.tituloEn  || titulo;
+    const descricao = card?.dataset.descricao || "";
+    const nota      = card?.dataset.nota      || "";
+    const data      = card?.dataset.data      || "";
+    const ano       = card?.dataset.ano       || "";
+
+    idFilme = null; idTrailer = null; abaAtiva = "filme";
+
+    document.getElementById("modal").style.display = "flex";
+    document.getElementById("modal-titulo").textContent    = titulo;
+    document.getElementById("modal-descricao").textContent = descricao;
+    document.getElementById("modal-nota").textContent      = nota;
+    document.getElementById("modal-data").textContent      = data;
+
+    // Reset OMDB
+    ["modal-runtime","modal-rated"].forEach(id => document.getElementById(id).style.display="none");
+    document.getElementById("modal-genres").innerHTML    = "";
+    document.getElementById("omdb-loading").style.display = "";
+    document.getElementById("omdb-loading").textContent  = "⏳ Buscando informações adicionais...";
+    ["omdb-director","omdb-cast","omdb-awards","omdb-boxoffice"].forEach(id => document.getElementById(id).style.display="none");
+    document.getElementById("omdb-ratings").innerHTML = "";
+    document.getElementById("btn-imdb").style.display = "none";
+
+    const abaF = document.getElementById("aba-filme");
+    const abaT = document.getElementById("aba-trailer");
+    abaF.className = "aba ativa loading-aba"; abaF.textContent = "⏳ Buscando filme...";
+    abaT.className = "aba loading-aba";       abaT.textContent = "⏳ Buscando trailer...";
+
+    document.getElementById("btn-externo").href = `https://www.youtube.com/results?search_query=${encodeURIComponent(titulo+" filme completo dublado")}`;
+    setIframe(null);
+    showPlaceholder(`<i class="bi bi-arrow-repeat" style="animation:spin 1s linear infinite;font-size:40px;color:#e50914"></i><span>Buscando filme no YouTube...</span>`);
+
+    buscarOmdb(tituloEn, ano).then(renderizarOmdb);
+
+    buscarFilmeYT(titulo, tituloEn).then(vid => {
+        idFilme = vid;
+        abaF.className   = vid ? "aba ativa" : "aba indisponivel";
+        abaF.textContent = vid ? "🎬 Filme Completo" : "🎬 Não disponível";
+        if (abaAtiva === "filme") renderAba();
     });
 
-    document.getElementById("pesquisa").addEventListener("keypress", function(e) {
-        if (e.key === "Enter") pesquisarFilme();
+    buscarTrailerTMDB(id).then(vid => {
+        idTrailer = vid;
+        abaT.className   = vid ? "aba" : "aba indisponivel";
+        abaT.textContent = vid ? "▶ Trailer" : "▶ Sem trailer";
     });
+}
 
-    buscarFilmes();
+function trocarAba(aba) {
+    const f = document.getElementById("aba-filme");
+    const t = document.getElementById("aba-trailer");
+    if (aba==="filme"   && f.classList.contains("indisponivel")) return;
+    if (aba==="trailer" && t.classList.contains("indisponivel")) return;
+    abaAtiva = aba;
+    f.classList.toggle("ativa", aba==="filme");
+    t.classList.toggle("ativa", aba==="trailer");
+    renderAba();
+}
+
+function renderAba() {
+    const btnExt = document.getElementById("btn-externo");
+    if (abaAtiva === "filme") {
+        if (idFilme === null) {
+            showPlaceholder(`<i class="bi bi-arrow-repeat" style="animation:spin 1s linear infinite;font-size:40px;color:#e50914"></i><span>Buscando filme completo...</span>`);
+        } else if (!idFilme) {
+            showPlaceholder(`<i class="bi bi-film" style="font-size:40px;color:#333"></i><span>Filme completo não encontrado no YouTube.</span><a href="${btnExt.href}" target="_blank" style="color:#e50914;margin-top:8px;font-size:13px;">Buscar manualmente →</a>`);
+        } else {
+            btnExt.href = `https://www.youtube.com/watch?v=${idFilme}`;
+            setIframe(idFilme);
+        }
+    } else {
+        if (idTrailer === null) {
+            showPlaceholder(`<i class="bi bi-arrow-repeat" style="animation:spin 1s linear infinite;font-size:40px;color:#e50914"></i><span>Buscando trailer...</span>`);
+        } else if (!idTrailer) {
+            showPlaceholder(`<i class="bi bi-exclamation-circle" style="font-size:40px;color:#333"></i><span>Trailer não encontrado.</span>`);
+        } else {
+            btnExt.href = `https://www.youtube.com/watch?v=${idTrailer}`;
+            setIframe(idTrailer);
+        }
+    }
+}
+
+function setIframe(videoId) {
+    const w = document.getElementById("player-wrapper");
+    const old = w.querySelector("iframe");
+    if (old) old.remove();
+    document.getElementById("player-placeholder").style.display = "none";
+    if (!videoId) return;
+    const iframe = document.createElement("iframe");
+    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+    iframe.allow = "autoplay; fullscreen; picture-in-picture";
+    iframe.allowFullscreen = true;
+    w.appendChild(iframe);
+}
+
+function showPlaceholder(html) {
+    const w = document.getElementById("player-wrapper");
+    const old = w.querySelector("iframe");
+    if (old) old.remove();
+    const ph = document.getElementById("player-placeholder");
+    ph.style.display = "flex";
+    ph.innerHTML = html;
+}
+
+function fecharModal() {
+    document.getElementById("modal").style.display = "none";
+    const iframe = document.getElementById("player-wrapper").querySelector("iframe");
+    if (iframe) iframe.remove();
+    idFilme = null; idTrailer = null;
+}
+
+// ════════════════════════════════════════════════
+// EVENTOS
+// ════════════════════════════════════════════════
+document.getElementById("modal").addEventListener("click", e => { if (e.target===e.currentTarget) fecharModal(); });
+document.getElementById("modal-serie").addEventListener("click", e => { if (e.target===e.currentTarget) fecharModalSerie(); });
+document.getElementById("pesquisa").addEventListener("keypress", e => { if (e.key==="Enter") pesquisar(); });
+
+buscarFilmes();
 </script>
 </body>
 </html>
